@@ -14,9 +14,10 @@ type KeyMap struct {
 	Confirm      key.Binding
 	Quit         key.Binding
 	Search       key.Binding
-	ClearSearch  key.Binding
-	Ignore       key.Binding
-	SaveProfile  key.Binding
+	ClearSearch     key.Binding
+	Ignore          key.Binding
+	IgnoreCategory  key.Binding
+	SaveProfile     key.Binding
 	TabTap       key.Binding
 	TabBrew      key.Binding
 	TabCask      key.Binding
@@ -79,7 +80,11 @@ func DefaultKeyMap() KeyMap {
 		),
 		Ignore: key.NewBinding(
 			key.WithKeys("i"),
-			key.WithHelp("i", "ignore"),
+			key.WithHelp("i", "ignore selected"),
+		),
+		IgnoreCategory: key.NewBinding(
+			key.WithKeys("I", "C"),
+			key.WithHelp("I/C", "ignore category"),
 		),
 		SaveProfile: key.NewBinding(
 			key.WithKeys("s"),
@@ -141,7 +146,7 @@ func (k KeyMap) ShortHelp() []key.Binding {
 func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down, k.Left, k.Right, k.PageUp, k.PageDown},
-		{k.Toggle, k.SelectAll, k.SelectNone, k.Ignore},
+		{k.Toggle, k.SelectAll, k.SelectNone, k.Ignore, k.IgnoreCategory},
 		{k.TabAll, k.TabTap, k.TabBrew, k.TabCask},
 		{k.TabVSCode, k.TabCursor, k.TabGo, k.TabMas},
 		{k.Search, k.Confirm, k.Quit, k.Help},

@@ -54,20 +54,21 @@ func (i Item) FilterValue() string {
 
 // Model is the Bubble Tea model for package selection
 type Model struct {
-	title      string
-	items      []Item
-	cursor     int
-	category   Category
-	searching  bool
-	searchText textinput.Model
-	filtered   []int // indices into items that match current filter
-	keys       KeyMap
-	help       help.Model
-	showHelp   bool
-	width      int
-	height     int
-	cancelled  bool
-	confirmed  bool
+	title             string
+	items             []Item
+	cursor            int
+	category          Category
+	searching         bool
+	searchText        textinput.Model
+	filtered          []int            // indices into items that match current filter
+	keys              KeyMap
+	help              help.Model
+	showHelp          bool
+	width             int
+	height            int
+	cancelled         bool
+	confirmed         bool
+	ignoredCategories map[string]bool  // Track categories marked for ignoring
 }
 
 // New creates a new selection model
@@ -87,17 +88,18 @@ func New(title string, packages brewfile.Packages) Model {
 	ti.Width = 30
 
 	m := Model{
-		title:      title,
-		items:      items,
-		cursor:     0,
-		category:   CategoryAll,
-		searching:  false,
-		searchText: ti,
-		keys:       DefaultKeyMap(),
-		help:       help.New(),
-		showHelp:   false,
-		width:      80,
-		height:     24,
+		title:             title,
+		items:             items,
+		cursor:            0,
+		category:          CategoryAll,
+		searching:         false,
+		searchText:        ti,
+		keys:              DefaultKeyMap(),
+		help:              help.New(),
+		showHelp:          false,
+		width:             80,
+		height:            24,
+		ignoredCategories: make(map[string]bool),
 	}
 
 	m.updateFiltered()
@@ -205,6 +207,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Ignore):
 			m.toggleIgnoreCurrent()
 
+		case key.Matches(msg, m.keys.IgnoreCategory):
+			m.toggleIgnoreCurrentCategory()
+
 		case key.Matches(msg, m.keys.Help):
 			m.showHelp = !m.showHelp
 
@@ -255,6 +260,15 @@ func (m Model) Ignored() brewfile.Packages {
 		}
 	}
 	return ignored
+}
+
+// IgnoredCategories returns the list of categories marked for ignoring
+func (m Model) IgnoredCategories() []string {
+	var categories []string
+	for cat := range m.ignoredCategories {
+		categories = append(categories, cat)
+	}
+	return categories
 }
 
 // Cancelled returns true if the user cancelled
@@ -336,6 +350,33 @@ func (m *Model) toggleIgnoreCurrent() {
 	m.items[idx].Ignored = !m.items[idx].Ignored
 	if m.items[idx].Ignored {
 		m.items[idx].Selected = false
+	}
+}
+
+// toggleIgnoreCurrentCategory toggles ignoring the entire current category
+func (m *Model) toggleIgnoreCurrentCategory() {
+	// Don't allow ignoring "all" category
+	if m.category == CategoryAll {
+		return
+	}
+
+	categoryType := string(m.category)
+
+	// Toggle the category in ignored map
+	if m.ignoredCategories[categoryType] {
+		delete(m.ignoredCategories, categoryType)
+	} else {
+		m.ignoredCategories[categoryType] = true
+	}
+
+	// Update all packages of this category
+	for i := range m.items {
+		if string(m.items[i].Package.Type) == categoryType {
+			m.items[i].Ignored = m.ignoredCategories[categoryType]
+			if m.items[i].Ignored {
+				m.items[i].Selected = false
+			}
+		}
 	}
 }
 

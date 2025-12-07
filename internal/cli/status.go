@@ -111,20 +111,35 @@ func runStatus(cmd *cobra.Command, args []string) error {
 		Render(strings.Repeat("─", tableWidth-4))
 	allLines = append(allLines, separator, "")
 
-	// Machine info
+	// Machine info section
+	machineSection := lipgloss.NewStyle().
+		Foreground(catBlue).
+		Bold(true).
+		Render("🖥  Machine Info")
+	allLines = append(allLines, machineSection)
+	allLines = append(allLines, "")
+
 	if machine.Hostname != "" {
-		allLines = append(allLines, formatStatusLine("🖥", "Hostname", machine.Hostname, catText))
+		allLines = append(allLines, formatStatusLine("  ", "Hostname", machine.Hostname, catText))
 	}
-	allLines = append(allLines, formatStatusLine("📄", "Brewfile", machine.Brewfile, catSubtext0))
+	allLines = append(allLines, formatStatusLine("  ", "Brewfile", machine.Brewfile, catSubtext0))
 	if cfg.DefaultSource != "" {
-		allLines = append(allLines, formatStatusLine("🔗", "Source", cfg.DefaultSource, catText))
+		allLines = append(allLines, formatStatusLine("  ", "Source", cfg.DefaultSource, catText))
 	}
 
-	// Package counts
+	// Package stats section
+	allLines = append(allLines, "")
+	statsSection := lipgloss.NewStyle().
+		Foreground(catGreen).
+		Bold(true).
+		Render("📊 Package Statistics")
+	allLines = append(allLines, statsSection)
+	allLines = append(allLines, "")
+
 	packages, err := brewfile.Parse(machine.Brewfile)
 	if err == nil {
-		counts := formatPackageCountsCompact(packages)
-		allLines = append(allLines, formatStatusLine("📦", "Packages", counts, catText))
+		// Show detailed package counts
+		allLines = append(allLines, formatPackageCountsDetailed(packages))
 	}
 
 	// Metadata (if available)
@@ -144,13 +159,58 @@ func runStatus(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// Pending changes (if any)
+	// Ignored section
+	ignoredPkgs := cfg.GetIgnoredPackages(currentMachine)
+	ignoredCategories := cfg.GetIgnoredCategories(currentMachine)
+
+	if len(ignoredPkgs) > 0 || len(ignoredCategories) > 0 {
+		allLines = append(allLines, "")
+		ignoredSection := lipgloss.NewStyle().
+			Foreground(catOverlay1).
+			Bold(true).
+			Render("🚫 Ignored")
+		allLines = append(allLines, ignoredSection)
+		allLines = append(allLines, "")
+
+		if len(ignoredCategories) > 0 {
+			catText := lipgloss.NewStyle().Foreground(catOverlay1).Render(
+				fmt.Sprintf("Categories: %s", strings.Join(ignoredCategories, ", ")))
+			allLines = append(allLines, "  "+catText)
+		}
+
+		if len(ignoredPkgs) > 0 {
+			// Group ignored packages by type
+			ignoredByType := make(map[string]int)
+			for _, pkgID := range ignoredPkgs {
+				parts := strings.Split(pkgID, ":")
+				if len(parts) == 2 {
+					ignoredByType[parts[0]]++
+				}
+			}
+
+			var ignoredParts []string
+			for pkgType, count := range ignoredByType {
+				ignoredParts = append(ignoredParts, fmt.Sprintf("%s: %d", pkgType, count))
+			}
+			if len(ignoredParts) > 0 {
+				pkgText := lipgloss.NewStyle().Foreground(catOverlay1).Render(
+					fmt.Sprintf("Packages: %s", strings.Join(ignoredParts, ", ")))
+				allLines = append(allLines, "  "+pkgText)
+			}
+		}
+	}
+
+	// Pending changes (if any) - excluding ignored items
 	if cfg.DefaultSource != "" && cfg.DefaultSource != currentMachine && packages != nil {
 		sourceMachine, ok := cfg.Machines[cfg.DefaultSource]
 		if ok {
 			sourcePackages, err := brewfile.Parse(sourceMachine.Brewfile)
 			if err == nil {
 				diff := brewfile.Diff(sourcePackages, packages)
+
+				// Filter out ignored packages and categories
+				diff = filterIgnoredFromDiff(diff, ignoredCategories, ignoredPkgs)
+
 				if !diff.IsEmpty() {
 					allLines = append(allLines, "")
 					pendingHeader := lipgloss.NewStyle().
@@ -158,7 +218,8 @@ func runStatus(cmd *cobra.Command, args []string) error {
 						Bold(true).
 						Render(fmt.Sprintf("⚡ Pending from %s", cfg.DefaultSource))
 					allLines = append(allLines, pendingHeader)
-					allLines = append(allLines, formatPendingCompact(diff))
+					allLines = append(allLines, "")
+					allLines = append(allLines, formatPendingDetailed(diff))
 				}
 			}
 		}
@@ -403,3 +464,187 @@ func formatPendingCompact(diff *brewfile.DiffResult) string {
 
 	return strings.Join(lines, "\n")
 }
+
+// formatPackageCountsDetailed formats package counts with individual lines per type
+func formatPackageCountsDetailed(packages brewfile.Packages) string {
+	byType := packages.ByType()
+	typeOrder := []brewfile.PackageType{
+		brewfile.TypeTap,
+		brewfile.TypeBrew,
+		brewfile.TypeCask,
+		brewfile.TypeVSCode,
+		brewfile.TypeCursor,
+		brewfile.TypeAntigravity,
+		brewfile.TypeGo,
+		brewfile.TypeMas,
+	}
+
+	typeInfo := map[brewfile.PackageType]struct {
+		icon  string
+		color lipgloss.Color
+	}{
+		brewfile.TypeTap:         {"🚰", catTeal},
+		brewfile.TypeBrew:        {"🍺", catYellow},
+		brewfile.TypeCask:        {"📦", catPeach},
+		brewfile.TypeVSCode:      {"💻", catBlue},
+		brewfile.TypeCursor:      {"✏️ ", catMauve},
+		brewfile.TypeAntigravity: {"🚀", catPink},
+		brewfile.TypeGo:          {"🔷", catSapphire},
+		brewfile.TypeMas:         {"🍎", catRed},
+	}
+
+	var lines []string
+	total := len(packages)
+
+	for _, t := range typeOrder {
+		if pkgs, ok := byType[t]; ok && len(pkgs) > 0 {
+			info := typeInfo[t]
+			icon := lipgloss.NewStyle().Foreground(info.color).Render(info.icon)
+			label := lipgloss.NewStyle().Foreground(catText).Render(string(t))
+			count := lipgloss.NewStyle().Foreground(catGreen).Bold(true).Render(fmt.Sprintf("%d", len(pkgs)))
+			lines = append(lines, fmt.Sprintf("  %s %s: %s", icon, label, count))
+		}
+	}
+
+	// Total line
+	totalLine := lipgloss.NewStyle().
+		Foreground(catGreen).
+		Bold(true).
+		Render(fmt.Sprintf("  Total: %d packages", total))
+	lines = append(lines, "", totalLine)
+
+	return strings.Join(lines, "\n")
+}
+
+// formatPendingDetailed formats pending changes with summary and breakdown
+func formatPendingDetailed(diff *brewfile.DiffResult) string {
+	var lines []string
+
+	// Summary line
+	addCount := len(diff.Additions)
+	remCount := len(diff.Removals)
+
+	var summaryParts []string
+	if addCount > 0 {
+		addText := lipgloss.NewStyle().
+			Foreground(catGreen).
+			Bold(true).
+			Render(fmt.Sprintf("+%d to install", addCount))
+		summaryParts = append(summaryParts, addText)
+	}
+	if remCount > 0 {
+		remText := lipgloss.NewStyle().
+			Foreground(catRed).
+			Bold(true).
+			Render(fmt.Sprintf("-%d to remove", remCount))
+		summaryParts = append(summaryParts, remText)
+	}
+
+	lines = append(lines, "  "+strings.Join(summaryParts, ", "))
+	lines = append(lines, "")
+
+	// Type breakdown
+	typeOrder := []brewfile.PackageType{
+		brewfile.TypeTap,
+		brewfile.TypeBrew,
+		brewfile.TypeCask,
+		brewfile.TypeVSCode,
+		brewfile.TypeCursor,
+		brewfile.TypeAntigravity,
+		brewfile.TypeGo,
+		brewfile.TypeMas,
+	}
+
+	typeIcons := map[brewfile.PackageType]string{
+		brewfile.TypeTap:         "🚰",
+		brewfile.TypeBrew:        "🍺",
+		brewfile.TypeCask:        "📦",
+		brewfile.TypeVSCode:      "💻",
+		brewfile.TypeCursor:      "✏️",
+		brewfile.TypeAntigravity: "🚀",
+		brewfile.TypeGo:          "🔷",
+		brewfile.TypeMas:         "🍎",
+	}
+
+	addByType := diff.AdditionsByType()
+	remByType := diff.RemovalsByType()
+
+	for _, t := range typeOrder {
+		adds := len(addByType[t])
+		rems := len(remByType[t])
+
+		if adds == 0 && rems == 0 {
+			continue
+		}
+
+		icon := typeIcons[t]
+		var typeParts []string
+
+		if adds > 0 {
+			addText := lipgloss.NewStyle().
+				Foreground(catGreen).
+				Render(fmt.Sprintf("+%d", adds))
+			typeParts = append(typeParts, addText)
+		}
+		if rems > 0 {
+			remText := lipgloss.NewStyle().
+				Foreground(catRed).
+				Render(fmt.Sprintf("-%d", rems))
+			typeParts = append(typeParts, remText)
+		}
+
+		line := fmt.Sprintf("  %s %s: %s", icon, t, strings.Join(typeParts, " "))
+		lines = append(lines, line)
+	}
+
+	return strings.Join(lines, "\n")
+}
+
+// filterIgnoredFromDiff removes ignored categories and packages from diff results
+func filterIgnoredFromDiff(diff *brewfile.DiffResult, ignoredCategories, ignoredPackages []string) *brewfile.DiffResult {
+	// Create maps for quick lookup
+	ignoredCatMap := make(map[string]bool)
+	for _, cat := range ignoredCategories {
+		ignoredCatMap[cat] = true
+	}
+
+	ignoredPkgMap := make(map[string]bool)
+	for _, pkg := range ignoredPackages {
+		ignoredPkgMap[pkg] = true
+	}
+
+	// Filter additions
+	var filteredAdditions brewfile.Packages
+	for _, pkg := range diff.Additions {
+		// Skip if category is ignored
+		if ignoredCatMap[string(pkg.Type)] {
+			continue
+		}
+		// Skip if specific package is ignored
+		if ignoredPkgMap[pkg.ID()] {
+			continue
+		}
+		filteredAdditions = append(filteredAdditions, pkg)
+	}
+
+	// Filter removals
+	var filteredRemovals brewfile.Packages
+	for _, pkg := range diff.Removals {
+		// Skip if category is ignored
+		if ignoredCatMap[string(pkg.Type)] {
+			continue
+		}
+		// Skip if specific package is ignored
+		if ignoredPkgMap[pkg.ID()] {
+			continue
+		}
+		filteredRemovals = append(filteredRemovals, pkg)
+	}
+
+	return &brewfile.DiffResult{
+		Additions: filteredAdditions,
+		Removals:  filteredRemovals,
+		Common:    diff.Common, // Keep common as is
+	}
+}
+

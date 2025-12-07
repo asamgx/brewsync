@@ -223,6 +223,17 @@ func runImport(cmd *cobra.Command, args []string) error {
 
 		toInstall = m.Selected()
 
+		// Handle newly ignored categories
+		ignoredCategories := m.IgnoredCategories()
+		if len(ignoredCategories) > 0 {
+			printInfo("Adding %d categories to ignore list", len(ignoredCategories))
+			for _, category := range ignoredCategories {
+				if err := config.AddCategoryIgnore(currentMachine, category, false); err != nil {
+					printWarning("Failed to ignore category %s: %v", category, err)
+				}
+			}
+		}
+
 		// Handle newly ignored packages
 		newlyIgnored := m.Ignored()
 		if len(newlyIgnored) > 0 {
