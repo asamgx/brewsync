@@ -14,6 +14,7 @@ import (
 
 	"github.com/andrew-sameh/brewsync/internal/brewfile"
 	"github.com/andrew-sameh/brewsync/internal/config"
+	"github.com/andrew-sameh/brewsync/internal/exec"
 	"github.com/andrew-sameh/brewsync/internal/installer"
 )
 
@@ -244,9 +245,12 @@ func runDumpAnimated(cfg *config.Config, machine config.Machine, brewfilePath st
 	// Print pretty summary
 	printDumpSummary(cfg.CurrentMachine, brewfilePath, allPackages, false)
 
-	// TODO: Handle --commit and --push flags
+	// Handle commit and push
 	if dumpCommit || dumpPush {
-		printWarning("--commit and --push flags not yet implemented")
+		if err := handleGitCommitAndPush(cfg, brewfilePath); err != nil {
+			printWarning("Git commit/push failed: %v", err)
+			return err
+		}
 	}
 
 	return nil
@@ -512,4 +516,54 @@ func printDumpSummary(machineName, brewfilePath string, packages brewfile.Packag
 	fmt.Println()
 	fmt.Println(summaryBox.Render(strings.Join(allLines, "\n")))
 	fmt.Println()
+}
+
+func handleGitCommitAndPush(cfg *config.Config, brewfilePath string) error {
+	runner := exec.NewRunner()
+	dir := filepath.Dir(brewfilePath)
+
+	// Check if it's a git repo
+	if _, err := runner.Run("git", "-C", dir, "rev-parse", "--git-dir"); err != nil {
+		return fmt.Errorf("not a git repository: %s", dir)
+	}
+
+	// Add the Brewfile
+	fileName := filepath.Base(brewfilePath)
+	if _, err := runner.Run("git", "-C", dir, "add", fileName); err != nil {
+		return fmt.Errorf("failed to git add: %w", err)
+	}
+
+	// Check if there are changes to commit
+	status, err := runner.Run("git", "-C", dir, "status", "--porcelain", fileName)
+	if err != nil {
+		return fmt.Errorf("failed to check git status: %w", err)
+	}
+
+	if strings.TrimSpace(status) == "" {
+		printInfo("No changes to commit")
+		return nil
+	}
+
+	// Prepare commit message
+	commitMsg := dumpMessage
+	if commitMsg == "" {
+		commitMsg = fmt.Sprintf("brewsync: update %s Brewfile", cfg.CurrentMachine)
+	}
+
+	// Commit
+	if _, err := runner.Run("git", "-C", dir, "commit", "-m", commitMsg); err != nil {
+		return fmt.Errorf("failed to commit: %w", err)
+	}
+	printInfo("✓ Committed changes: %s", commitMsg)
+
+	// Push if requested
+	if dumpPush {
+		printInfo("Pushing to remote...")
+		if _, err := runner.Run("git", "-C", dir, "push"); err != nil {
+			return fmt.Errorf("failed to push: %w", err)
+		}
+		printInfo("✓ Pushed to remote")
+	}
+
+	return nil
 }

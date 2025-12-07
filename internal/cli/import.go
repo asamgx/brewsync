@@ -303,6 +303,33 @@ func runImport(cmd *cobra.Command, args []string) error {
 		history.LogImport(currentMachine, strings.Join(sources, ","), pkgNames)
 	}
 
+	// Auto-dump if enabled and packages were installed
+	if len(toInstall) > 0 && cfg.AutoDump.Enabled && cfg.AutoDump.AfterInstall {
+		printInfo("Auto-dumping Brewfile...")
+
+		// Set flags for commit/push based on config
+		oldCommit := dumpCommit
+		oldPush := dumpPush
+		oldMessage := dumpMessage
+
+		dumpCommit = cfg.AutoDump.Commit
+		dumpPush = cfg.AutoDump.Push
+		if cfg.AutoDump.CommitMessage != "" {
+			dumpMessage = strings.ReplaceAll(cfg.AutoDump.CommitMessage, "{machine}", currentMachine)
+		}
+
+		err := runDump(nil, []string{})
+
+		// Restore flags
+		dumpCommit = oldCommit
+		dumpPush = oldPush
+		dumpMessage = oldMessage
+
+		if err != nil {
+			printWarning("Auto-dump failed: %v", err)
+		}
+	}
+
 	return nil
 }
 
