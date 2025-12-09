@@ -522,6 +522,20 @@ make help               # See all available commands
 
 See [MAKEFILE_GUIDE.md](MAKEFILE_GUIDE.md) for complete documentation.
 
+## Pending Items / Roadmap
+
+The following TUI features are planned or need fixes:
+
+| # | Item | Description |
+|---|------|-------------|
+| 1 | Fix TUI Sync page | Sync preview and apply functionality not fully working |
+| 2 | Add global `i`/`X` hotkeys | Install (`i`) or uninstall (`X`) package under cursor in List/Diff screens |
+| 3 | Fix Config TUI page | Config screen not displaying/editing properly |
+| 4 | Fix Profiles TUI page | Profiles screen not fully functional |
+| 5 | Support searching with `/` | Add fuzzy search in List, Diff, Import screens |
+| 6 | Fix diff lists height bug | Column heights not calculated correctly in some cases |
+| 7 | Enhance Doctor screen | Add recommended fixes for warnings + descriptions for each check |
+
 ## License
 
 MIT

@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"os"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 
 	"github.com/andrew-sameh/brewsync/internal/config"
+	"github.com/andrew-sameh/brewsync/internal/debug"
+	"github.com/andrew-sameh/brewsync/internal/tui/app"
 	"github.com/andrew-sameh/brewsync/pkg/version"
 )
 
@@ -89,7 +92,49 @@ between machines.`,
 		// Initialize config
 		return config.Init()
 	},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// Launch the full TUI when no subcommand is provided
+		return runMainTUI()
+	},
 	SilenceUsage: true,
+}
+
+// runMainTUI launches the main TUI application
+func runMainTUI() error {
+	// Initialize debug logging (only if BREWSYNC_DEBUG=1 or BREWSYNC_DEBUG=true)
+	debug.Init()
+	defer debug.Close()
+
+	debug.Log("runMainTUI: starting")
+
+	var cfg *config.Config
+	var err error
+
+	// Check if config exists
+	if config.Exists() {
+		debug.Log("runMainTUI: config exists, loading...")
+		cfg, err = config.Load()
+		if err != nil {
+			debug.Log("runMainTUI: config load error: %v", err)
+			return fmt.Errorf("failed to load config: %w", err)
+		}
+		debug.Log("runMainTUI: config loaded, current machine: %s", cfg.CurrentMachine)
+	} else {
+		debug.Log("runMainTUI: config does not exist, will start setup wizard")
+	}
+
+	// Create and run the TUI
+	debug.Log("runMainTUI: creating TUI model")
+	model := app.New(cfg)
+
+	debug.Log("runMainTUI: creating tea.Program")
+	p := tea.NewProgram(model, tea.WithAltScreen())
+
+	debug.Log("runMainTUI: running tea.Program")
+	_, err = p.Run()
+
+	debug.Log("runMainTUI: tea.Program finished, err=%v", err)
+	return err
 }
 
 // Execute runs the root command
