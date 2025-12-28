@@ -6,9 +6,9 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/andrew-sameh/brewsync/internal/config"
-	"github.com/andrew-sameh/brewsync/internal/history"
-	"github.com/andrew-sameh/brewsync/internal/tui/styles"
+	"github.com/asamgx/brewsync/internal/config"
+	"github.com/asamgx/brewsync/internal/history"
+	"github.com/asamgx/brewsync/internal/tui/styles"
 )
 
 // HistoryModel is the model for the history screen

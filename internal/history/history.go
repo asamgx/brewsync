@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/andrew-sameh/brewsync/internal/config"
+	"github.com/asamgx/brewsync/internal/config"
 )
 
 // Operation represents the type of operation logged

@@ -640,6 +640,6 @@ MIT
 [![Bubble Tea](https://img.shields.io/badge/Bubble%20Tea-F25D94?style=flat)](https://github.com/charmbracelet/bubbletea)
 [![Lipgloss](https://img.shields.io/badge/Lipgloss-7D56F4?style=flat)](https://github.com/charmbracelet/lipgloss)
 
-[Report Bug](https://github.com/andrew-sameh/brewsync/issues) · [Request Feature](https://github.com/andrew-sameh/brewsync/issues) · [Documentation](CLAUDE.md)
+[Report Bug](https://github.com/asamgx/brewsync/issues) · [Request Feature](https://github.com/asamgx/brewsync/issues) · [Documentation](CLAUDE.md)
 
 </div>

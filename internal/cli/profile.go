@@ -8,9 +8,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/andrew-sameh/brewsync/internal/brewfile"
-	"github.com/andrew-sameh/brewsync/internal/installer"
-	"github.com/andrew-sameh/brewsync/internal/profile"
+	"github.com/asamgx/brewsync/internal/brewfile"
+	"github.com/asamgx/brewsync/internal/installer"
+	"github.com/asamgx/brewsync/internal/profile"
 )
 
 var profileCmd = &cobra.Command{

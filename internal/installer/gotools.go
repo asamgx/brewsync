@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/andrew-sameh/brewsync/internal/brewfile"
-	"github.com/andrew-sameh/brewsync/internal/exec"
+	"github.com/asamgx/brewsync/internal/brewfile"
+	"github.com/asamgx/brewsync/internal/exec"
 )
 
 // GoToolsInstaller handles Go tools

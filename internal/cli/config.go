@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
-	"github.com/andrew-sameh/brewsync/internal/config"
+	"github.com/asamgx/brewsync/internal/config"
 )
 
 var configCmd = &cobra.Command{

@@ -5,7 +5,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/andrew-sameh/brewsync/internal/tui/styles"
+	"github.com/asamgx/brewsync/internal/tui/styles"
 )
 
 // Box renders a bordered box with an optional title

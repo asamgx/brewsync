@@ -8,9 +8,9 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 
-	"github.com/andrew-sameh/brewsync/internal/config"
-	"github.com/andrew-sameh/brewsync/internal/exec"
-	"github.com/andrew-sameh/brewsync/pkg/version"
+	"github.com/asamgx/brewsync/internal/config"
+	"github.com/asamgx/brewsync/internal/exec"
+	"github.com/asamgx/brewsync/pkg/version"
 )
 
 var doctorCmd = &cobra.Command{

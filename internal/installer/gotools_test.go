@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/andrew-sameh/brewsync/internal/brewfile"
+	"github.com/asamgx/brewsync/internal/brewfile"
 	"github.com/stretchr/testify/assert"
 )
 

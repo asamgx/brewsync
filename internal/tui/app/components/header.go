@@ -6,8 +6,8 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/andrew-sameh/brewsync/internal/tui/styles"
-	"github.com/andrew-sameh/brewsync/pkg/version"
+	"github.com/asamgx/brewsync/internal/tui/styles"
+	"github.com/asamgx/brewsync/pkg/version"
 )
 
 // HeaderModel represents the global header bar

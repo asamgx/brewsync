@@ -94,5 +94,5 @@ Ctrl+L
 Sleep 500ms
 Type "# BrewSync - Machine-centric dotfiles sync"
 Enter
-Type "# Learn more: github.com/andrew-sameh/brewsync"
+Type "# Learn more: github.com/asamgx/brewsync"
 Sleep 3s

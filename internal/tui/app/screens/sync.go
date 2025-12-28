@@ -9,10 +9,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/andrew-sameh/brewsync/internal/brewfile"
-	"github.com/andrew-sameh/brewsync/internal/config"
-	"github.com/andrew-sameh/brewsync/internal/installer"
-	"github.com/andrew-sameh/brewsync/internal/tui/styles"
+	"github.com/asamgx/brewsync/internal/brewfile"
+	"github.com/asamgx/brewsync/internal/config"
+	"github.com/asamgx/brewsync/internal/installer"
+	"github.com/asamgx/brewsync/internal/tui/styles"
 )
 
 // SyncPhase represents the current phase of the sync flow

@@ -5,7 +5,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/andrew-sameh/brewsync/internal/tui/styles"
+	"github.com/asamgx/brewsync/internal/tui/styles"
 )
 
 // FooterModel represents the status bar and keybindings footer

@@ -9,8 +9,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/andrew-sameh/brewsync/internal/brewfile"
-	"github.com/andrew-sameh/brewsync/internal/tui/styles"
+	"github.com/asamgx/brewsync/internal/brewfile"
+	"github.com/asamgx/brewsync/internal/tui/styles"
 )
 
 // InstallResult represents the result of installing a package

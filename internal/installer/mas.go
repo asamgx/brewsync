@@ -4,8 +4,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/andrew-sameh/brewsync/internal/brewfile"
-	"github.com/andrew-sameh/brewsync/internal/exec"
+	"github.com/asamgx/brewsync/internal/brewfile"
+	"github.com/asamgx/brewsync/internal/exec"
 )
 
 // MasInstaller handles Mac App Store apps

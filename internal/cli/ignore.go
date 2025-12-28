@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/andrew-sameh/brewsync/internal/config"
+	"github.com/asamgx/brewsync/internal/config"
 )
 
 var ignoreCmd = &cobra.Command{

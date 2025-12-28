@@ -90,5 +90,5 @@ Enter
 Type "# • Git-based dotfiles workflow"
 Enter
 Enter
-Type "# github.com/andrew-sameh/brewsync"
+Type "# github.com/asamgx/brewsync"
 Sleep 3s

@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/andrew-sameh/brewsync/internal/history"
+	"github.com/asamgx/brewsync/internal/history"
 )
 
 var (

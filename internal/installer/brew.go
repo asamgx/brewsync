@@ -3,8 +3,8 @@ package installer
 import (
 	"strings"
 
-	"github.com/andrew-sameh/brewsync/internal/brewfile"
-	"github.com/andrew-sameh/brewsync/internal/exec"
+	"github.com/asamgx/brewsync/internal/brewfile"
+	"github.com/asamgx/brewsync/internal/exec"
 )
 
 // BrewInstaller handles Homebrew formulae and casks

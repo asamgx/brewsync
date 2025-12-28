@@ -13,10 +13,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"gopkg.in/yaml.v3"
 
-	"github.com/andrew-sameh/brewsync/internal/brewfile"
-	"github.com/andrew-sameh/brewsync/internal/config"
-	"github.com/andrew-sameh/brewsync/internal/installer"
-	"github.com/andrew-sameh/brewsync/internal/tui/styles"
+	"github.com/asamgx/brewsync/internal/brewfile"
+	"github.com/asamgx/brewsync/internal/config"
+	"github.com/asamgx/brewsync/internal/installer"
+	"github.com/asamgx/brewsync/internal/tui/styles"
 )
 
 // SetupStep represents the current step in the setup wizard

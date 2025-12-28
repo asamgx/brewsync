@@ -7,10 +7,10 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/andrew-sameh/brewsync/internal/brewfile"
-	"github.com/andrew-sameh/brewsync/internal/config"
-	"github.com/andrew-sameh/brewsync/internal/tui/selection"
-	"github.com/andrew-sameh/brewsync/internal/tui/styles"
+	"github.com/asamgx/brewsync/internal/brewfile"
+	"github.com/asamgx/brewsync/internal/config"
+	"github.com/asamgx/brewsync/internal/tui/selection"
+	"github.com/asamgx/brewsync/internal/tui/styles"
 )
 
 // ImportPhase represents the current phase of the import flow

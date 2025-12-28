@@ -4,13 +4,13 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/andrew-sameh/brewsync/internal/brewfile"
-	"github.com/andrew-sameh/brewsync/internal/config"
-	"github.com/andrew-sameh/brewsync/internal/debug"
-	"github.com/andrew-sameh/brewsync/internal/history"
-	"github.com/andrew-sameh/brewsync/internal/installer"
-	"github.com/andrew-sameh/brewsync/internal/tui/app/components"
-	"github.com/andrew-sameh/brewsync/internal/tui/app/screens"
+	"github.com/asamgx/brewsync/internal/brewfile"
+	"github.com/asamgx/brewsync/internal/config"
+	"github.com/asamgx/brewsync/internal/debug"
+	"github.com/asamgx/brewsync/internal/history"
+	"github.com/asamgx/brewsync/internal/installer"
+	"github.com/asamgx/brewsync/internal/tui/app/components"
+	"github.com/asamgx/brewsync/internal/tui/app/screens"
 )
 
 // Screen represents which screen is currently active

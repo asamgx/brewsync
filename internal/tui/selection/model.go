@@ -9,7 +9,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/sahilm/fuzzy"
 
-	"github.com/andrew-sameh/brewsync/internal/brewfile"
+	"github.com/asamgx/brewsync/internal/brewfile"
 )
 
 // Category represents a package category tab

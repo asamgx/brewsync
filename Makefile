@@ -11,9 +11,9 @@ INSTALL_PATH=$(shell go env GOPATH)/bin
 VERSION=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
-LDFLAGS=-ldflags "-X github.com/andrew-sameh/brewsync/pkg/version.Version=$(VERSION) \
-                  -X github.com/andrew-sameh/brewsync/pkg/version.Commit=$(COMMIT) \
-                  -X github.com/andrew-sameh/brewsync/pkg/version.Date=$(BUILD_DATE)"
+LDFLAGS=-ldflags "-X github.com/asamgx/brewsync/pkg/version.Version=$(VERSION) \
+                  -X github.com/asamgx/brewsync/pkg/version.Commit=$(COMMIT) \
+                  -X github.com/asamgx/brewsync/pkg/version.Date=$(BUILD_DATE)"
 
 # Colors for output
 COLOR_RESET=\033[0m

@@ -515,9 +515,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 Version info in `pkg/version/version.go` is set via ldflags:
 ```bash
--ldflags "-X github.com/andrew-sameh/brewsync/pkg/version.Version=$(VERSION) \
-          -X github.com/andrew-sameh/brewsync/pkg/version.Commit=$(COMMIT) \
-          -X github.com/andrew-sameh/brewsync/pkg/version.Date=$(BUILD_DATE)"
+-ldflags "-X github.com/asamgx/brewsync/pkg/version.Version=$(VERSION) \
+          -X github.com/asamgx/brewsync/pkg/version.Commit=$(COMMIT) \
+          -X github.com/asamgx/brewsync/pkg/version.Date=$(BUILD_DATE)"
 ```
 
 ## Exit Codes

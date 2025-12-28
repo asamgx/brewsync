@@ -3,7 +3,7 @@ package installer
 import (
 	"fmt"
 
-	"github.com/andrew-sameh/brewsync/internal/brewfile"
+	"github.com/asamgx/brewsync/internal/brewfile"
 )
 
 // Installer is the interface for package installers

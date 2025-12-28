@@ -1,4 +1,4 @@
-module github.com/andrew-sameh/brewsync
+module github.com/asamgx/brewsync
 
 go 1.25.5
 
