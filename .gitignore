@@ -46,6 +46,9 @@ vendor/
 # Local config overrides (for testing)
 .config-local.yaml
 
+# oh-my-claudecode state
+.omc/
+
 # OS-specific files
 Thumbs.db
 .Spotlight-V100
