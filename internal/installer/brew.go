@@ -154,10 +154,14 @@ func (b *BrewInstaller) IsAvailable() bool {
 	return b.runner.Exists("brew")
 }
 
-// DumpToFile runs brew bundle dump to a file with descriptions
-// This uses 'brew bundle dump --describe' which automatically includes
-// package descriptions as comments in the output Brewfile
+// DumpToFile runs brew bundle dump to a file with descriptions.
+// Older Homebrew needs the --describe flag for descriptions; Homebrew 7+
+// includes them by default and rejects the flag, so fall back to a plain
+// dump when --describe fails.
 func (b *BrewInstaller) DumpToFile(path string) error {
-	_, err := b.runner.Run("brew", "bundle", "dump", "--force", "--describe", "--file="+path)
+	if _, err := b.runner.Run("brew", "bundle", "dump", "--force", "--describe", "--file="+path); err == nil {
+		return nil
+	}
+	_, err := b.runner.Run("brew", "bundle", "dump", "--force", "--file="+path)
 	return err
 }

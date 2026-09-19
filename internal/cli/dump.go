@@ -256,32 +256,55 @@ func runDumpAnimated(cfg *config.Config, machine config.Machine, brewfilePath st
 	return nil
 }
 
+// collectHomebrewPackages gathers taps, formulae, and casks. It prefers
+// 'brew bundle dump' (includes descriptions) when configured, and collects
+// via individual brew list commands when brew bundle dump fails, so a
+// Brewfile is never written without Homebrew packages.
+func collectHomebrewPackages(cfg *config.Config, brewfilePath string, brewInst *installer.BrewInstaller) (brewfile.Packages, error) {
+	if cfg.Dump.UseBrewBundle {
+		tmpFile := brewfilePath + ".brewbundle.tmp"
+		defer os.Remove(tmpFile)
+		if err := brewInst.DumpToFile(tmpFile); err != nil {
+			printWarning("brew bundle dump failed (%v), collecting via brew list instead", err)
+		} else if brewPkgs, err := brewfile.Parse(tmpFile); err != nil {
+			printWarning("failed to parse brew bundle output (%v), collecting via brew list instead", err)
+		} else {
+			return brewPkgs, nil
+		}
+	}
+
+	var packages brewfile.Packages
+	taps, err := brewInst.ListTaps()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list taps: %w", err)
+	}
+	packages = append(packages, taps...)
+
+	formulae, err := brewInst.ListFormulae()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list formulae: %w", err)
+	}
+	packages = append(packages, formulae...)
+
+	casks, err := brewInst.ListCasks()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list casks: %w", err)
+	}
+	packages = append(packages, casks...)
+
+	return packages, nil
+}
+
 func collectAllPackages(cfg *config.Config, brewfilePath string) (brewfile.Packages, error) {
 	var allPackages brewfile.Packages
 	brewInst := installer.NewBrewInstaller()
 
-	// Use brew bundle dump if configured (default), otherwise collect manually
-	if cfg.Dump.UseBrewBundle && brewInst.IsAvailable() {
-		// Create temp file for brew bundle dump
-		tmpFile := brewfilePath + ".brewbundle.tmp"
-		if err := brewInst.DumpToFile(tmpFile); err == nil {
-			// Parse the brew bundle output (includes taps, formulae, casks with descriptions)
-			if brewPkgs, err := brewfile.Parse(tmpFile); err == nil {
-				allPackages = append(allPackages, brewPkgs...)
-			}
-			os.Remove(tmpFile)
+	if brewInst.IsAvailable() {
+		brewPkgs, err := collectHomebrewPackages(cfg, brewfilePath, brewInst)
+		if err != nil {
+			return nil, err
 		}
-	} else if brewInst.IsAvailable() {
-		// Manual collection
-		if taps, err := brewInst.ListTaps(); err == nil {
-			allPackages = append(allPackages, taps...)
-		}
-		if formulae, err := brewInst.ListFormulae(); err == nil {
-			allPackages = append(allPackages, formulae...)
-		}
-		if casks, err := brewInst.ListCasks(); err == nil {
-			allPackages = append(allPackages, casks...)
-		}
+		allPackages = append(allPackages, brewPkgs...)
 	}
 
 	// Collect extensions
@@ -326,38 +349,19 @@ func collectAllPackagesAnimated(cfg *config.Config, brewfilePath string, p *tea.
 	p.Send(dumpStepMsg{step: "Collecting Homebrew packages..."})
 	time.Sleep(100 * time.Millisecond) // Brief pause for UI update
 
-	if cfg.Dump.UseBrewBundle && brewInst.IsAvailable() {
-		tmpFile := brewfilePath + ".brewbundle.tmp"
-		if err := brewInst.DumpToFile(tmpFile); err == nil {
-			if brewPkgs, err := brewfile.Parse(tmpFile); err == nil {
-				allPackages = append(allPackages, brewPkgs...)
-				byType := brewPkgs.ByType()
-				taps := len(byType[brewfile.TypeTap])
-				formulae := len(byType[brewfile.TypeBrew])
-				casks := len(byType[brewfile.TypeCask])
-				info := fmt.Sprintf("Homebrew: %d packages (taps: %d, formulae: %d, casks: %d)",
-					len(brewPkgs), taps, formulae, casks)
-				p.Send(dumpStepMsg{countInfo: info})
-			}
-			os.Remove(tmpFile)
+	if brewInst.IsAvailable() {
+		brewPkgs, err := collectHomebrewPackages(cfg, brewfilePath, brewInst)
+		if err != nil {
+			return nil, err
 		}
-	} else if brewInst.IsAvailable() {
-		var brewCount int
-		if taps, err := brewInst.ListTaps(); err == nil {
-			allPackages = append(allPackages, taps...)
-			brewCount += len(taps)
-		}
-		if formulae, err := brewInst.ListFormulae(); err == nil {
-			allPackages = append(allPackages, formulae...)
-			brewCount += len(formulae)
-		}
-		if casks, err := brewInst.ListCasks(); err == nil {
-			allPackages = append(allPackages, casks...)
-			brewCount += len(casks)
-		}
-		if brewCount > 0 {
-			p.Send(dumpStepMsg{countInfo: fmt.Sprintf("Homebrew: %d packages", brewCount)})
-		}
+		allPackages = append(allPackages, brewPkgs...)
+		byType := brewPkgs.ByType()
+		taps := len(byType[brewfile.TypeTap])
+		formulae := len(byType[brewfile.TypeBrew])
+		casks := len(byType[brewfile.TypeCask])
+		info := fmt.Sprintf("Homebrew: %d packages (taps: %d, formulae: %d, casks: %d)",
+			len(brewPkgs), taps, formulae, casks)
+		p.Send(dumpStepMsg{countInfo: info})
 	}
 
 	// VSCode extensions
